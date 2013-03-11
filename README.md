@@ -1,4 +1,4 @@
-# Donnoman's Tanques
+# Donnoman's Tanque Fighting League
 
 https://github.com/awilliams/RTanque
 
@@ -14,3 +14,13 @@ OSX users using BREW can install Gosu with
 To Run all non-sample bots:
 
     $ bin/rtanque start bots/*
+
+Don't be a moron and spoil any fun by copying someone elses code or bot.  Write it yourself, in your own style with your own ideas.
+
+Copy freely from the sample bots provided by RTanque 
+
+    https://github.com/awilliams/RTanque/tree/master/sample_bots
+
+The documentation at RTanque is very helpful.
+
+    https://github.com/awilliams/RTanque

@@ -93,6 +93,7 @@ module Donnoman
 
 
   module Navigation
+
     class Spiral < Base::Strategy
       attr_writer :interval, :acuteness, :direction
       def interval
@@ -117,24 +118,28 @@ module Donnoman
         @last_health ||= sensors.health
       end
       def change
-        if !sensors.position.on_wall? and sensors.ticks % 1000 == 0 and sensors.health < last_health 
-          @direction = @direction * -1  # why can't I use the attr_writer for direction here?
-          last_health = sensors.health
+        if !sensors.position.on_wall? and sensors.ticks % 200 == 0 and sensors.health < self.last_health 
+          self.direction = self.direction * -1 
+          self.last_health = sensors.health
         end  
         super
       end
     end
+
   end
 
   module Acceleration
+
     class PedalToTheMetal < Base::Strategy
       def change
         command.speed = RTanque::Bot::BrainHelper::MAX_BOT_SPEED
       end
     end
+
   end
 
   module Radar
+
     class Sweep < Base::Strategy
       def acuteness
         @acuteness ||= in_degrees(RTanque::Bot::BrainHelper::MAX_RADAR_ROTATION)
@@ -146,6 +151,7 @@ module Donnoman
         command.radar_heading = rotate(sensors.radar_heading,acuteness,direction)
       end
     end
+
     class Focused < Base::Strategy
       attr_accessor :focused
       def change
@@ -156,6 +162,37 @@ module Donnoman
         end
       end
     end
+
+    class TurretSweep < Base::Strategy
+      def acuteness
+        RTanque.round(RTanque::Bot::BrainHelper::MAX_RADAR_ROTATION / 3.0, 10)
+      end
+      def change_direction
+        @direction = @direction * -1
+      end
+      def direction
+        @direction ||= random_direction
+      end
+      def oscillate_range
+        10
+      end
+      def oscillate_min
+        (oscillate_range * -1) + 1
+      end
+      def oscillate_max
+        oscillate_range - 1
+      end
+      def oscillate
+        @oscillate ||= 0
+        @oscillate += direction
+        change_direction if @oscillate < oscillate_min || @oscillate > oscillate_max 
+        @oscillate
+      end
+      def change
+        command.radar_heading = closest_to_engage.heading + oscillate * acuteness
+      end
+    end
+
     class Closest < Base::Strategy
       def change
         command.radar_heading = if closest_to_engage 
@@ -165,6 +202,23 @@ module Donnoman
         end
       end
     end
+
+    class SweepToTurretSweep < Base::Strategy
+      def turret_sweep
+        @turret_sweep ||= TurretSweep.new(bot)
+      end
+      def sweep
+        @sweep ||= Sweep.new(bot)
+      end
+      def change
+        if closest.any?
+          turret_sweep.change
+        else
+          sweep.change
+        end
+      end
+    end
+
     class SweepToFocused < Base::Strategy
       def focused
         @focused ||= Focused.new(bot)
@@ -180,6 +234,7 @@ module Donnoman
         end
       end
     end
+
     class SweepToClosest < Base::Strategy
       def closest_strategy
         @closest_strategy ||= Closest.new(bot)
@@ -195,9 +250,11 @@ module Donnoman
         end
       end
     end
+
   end
 
   module Turret
+
     class Closest < Base::Strategy
       def range
         opts[:range] || 10.0
@@ -212,6 +269,7 @@ module Donnoman
         end
       end
     end
+
   end
 
 end

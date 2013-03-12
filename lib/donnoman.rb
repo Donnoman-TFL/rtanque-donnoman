@@ -71,7 +71,7 @@ module Donnoman
       def lead(reflection)
         point = target_point(reflection)
         if tracking = tracked[reflection.name] and !(tracking[:point] == point)
-          heading = RTanque::Heading.new_between_points(tracking[:point], point) 
+          heading = RTanque::Heading.new_between_points(tracking[:point], point)
           dist    = RTanque::Point.distance(tracking[:point], point)
           speed   = dist / ( sensors.ticks - tracking[:ticks] )
           next_point = point.move(heading, speed * shell_lead(reflection.distance), bound_to_arena = true)
@@ -107,7 +107,7 @@ module Donnoman
       end
       def change
         if sensors.position.on_wall? or sensors.ticks % interval == 0
-          command.heading = rotate(sensors.heading,acuteness,direction)          
+          command.heading = rotate(sensors.heading,acuteness,direction)
         end
       end
     end
@@ -118,10 +118,10 @@ module Donnoman
         @last_health ||= sensors.health
       end
       def change
-        if !sensors.position.on_wall? and sensors.ticks % 200 == 0 and sensors.health < self.last_health 
-          self.direction = self.direction * -1 
+        if !sensors.position.on_wall? and sensors.ticks % 200 == 0 and sensors.health < self.last_health
+          self.direction = self.direction * -1
           self.last_health = sensors.health
-        end  
+        end
         super
       end
     end
@@ -155,7 +155,7 @@ module Donnoman
     class Focused < Base::Strategy
       attr_accessor :focused
       def change
-        command.radar_heading = if reflection = sensors.radar.find { |reflection| reflection.name == focused } 
+        command.radar_heading = if reflection = sensors.radar.find { |reflection| reflection.name == focused }
           reflection.heading
         elsif closest.any?
            (focused = closest.first).heading
@@ -185,7 +185,7 @@ module Donnoman
       def oscillate
         @oscillate ||= 0
         @oscillate += direction
-        change_direction if @oscillate < oscillate_min || @oscillate > oscillate_max 
+        change_direction if @oscillate < oscillate_min || @oscillate > oscillate_max
         @oscillate
       end
       def change
@@ -195,7 +195,7 @@ module Donnoman
 
     class Closest < Base::Strategy
       def change
-        command.radar_heading = if closest_to_engage 
+        command.radar_heading = if closest_to_engage
           lead(closest_to_engage).heading
         elsif closest.any?
           lead(closest.first).heading
@@ -264,8 +264,8 @@ module Donnoman
       end
       def change
         if closest_to_engage
-          command.turret_heading = lead(closest_to_engage).heading 
-          command.fire(RTanque::Bot::BrainHelper::MAX_FIRE_POWER) if closest_to_engage.heading.delta(sensors.turret_heading).abs < turret_fire_range
+          command.turret_heading = lead(closest_to_engage).heading
+          command.fire(RTanque::Bot::BrainHelper::MAX_FIRE_POWER) if command.turret_heading.delta(sensors.turret_heading).abs < turret_fire_range
         end
       end
     end

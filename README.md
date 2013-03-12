@@ -2,6 +2,8 @@
 
 https://github.com/awilliams/RTanque
 
+![RTanque Battle](/screenshots/screenshot-1.png?raw=true)
+
 OSX users using BREW can install Gosu with 
 
     $ brew install gosu
